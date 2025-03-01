@@ -1,0 +1,17 @@
+# Pythonの軽量イメージを使用
+FROM python:3.9-slim
+
+# 環境変数を設定（コンテナ内での作業ディレクトリ）
+WORKDIR /app
+
+# 必要なファイルをコンテナにコピー
+COPY requirements.txt .
+
+# 必要なパッケージをインストール
+RUN pip install --no-cache-dir -r requirements.txt
+
+# アプリのコードをコピー
+COPY . .
+
+# コンテナ起動時のデフォルトコマンド
+CMD ["python", "main.py"]
