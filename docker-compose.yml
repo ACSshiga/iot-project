@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   app:
     build: .
@@ -11,3 +9,10 @@ services:
     environment:
       - FLASK_ENV=development
     command: python main.py
+
+  test:
+    build: .
+    container_name: iot_test
+    volumes:
+      - .:/app
+    command: ["pytest", "--disable-warnings"]
