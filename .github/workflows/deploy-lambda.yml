@@ -1,38 +1,54 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      # 1. ソースコードを取得
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # 2. Pythonのセットアップ (ランタイムに合わせる)
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.9'
 
-      # 3. 依存関係インストール
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r lambda/requirements.txt -t lambda/
+          pip install -r lambda/requirements.txt
+          pip install pytest boto3
 
-      # 4. ZIP化
-      - name: Zip the Lambda function
-        run: cd lambda && zip -r ../lambda_function.zip .
+      - name: Run Unit Tests
+        run: pytest tests/
 
-      # 5. AWS認証 (OIDC)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # テスト成功後にデプロイ実行
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 6. Lambdaコードを更新
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
-            --function-name my-lambda-function \
+            --function-name ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }} \
             --zip-file fileb://lambda_function.zip
