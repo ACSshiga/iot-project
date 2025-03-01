@@ -8,65 +8,38 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
 
-      - name: リポジトリをチェックアウト
+    steps:
+      # 1. ソースコードを取得
+      - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Python環境をセットアップ
+      # 2. Pythonのセットアップ (ランタイムに合わせる)
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          # Lambdaのランタイムに合わせたPythonバージョンを指定する
-          python-version: '3.13'
+          python-version: '3.9'
 
-      - name: 依存関係をインストール
+      # 3. 依存関係インストール
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r lambda/requirements.txt -t lambda/
 
-      - name: ZIPファイルを作成
+      # 4. ZIP化
+      - name: Zip the Lambda function
         run: cd lambda && zip -r ../lambda_function.zip .
 
-      # 環境変数の確認
-      - name: 環境変数の確認 (Debug)
+      # 5. AWS認証 (OIDC)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 6. Lambdaコードを更新
+      - name: Deploy to AWS Lambda
         run: |
-          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
-          echo "GITHUB_REF=${GITHUB_REF}"
-          echo "ブランチ名=${GITHUB_REF#refs/heads/}"
-
-      # OIDC トークンを取得
-      - name: Get OIDC Token
-        run: |
-          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
-            echo "Error: ACTIONS_ID_TOKEN_REQUEST_URL is empty!"
-            exit 1
-          fi
-
-          TOKEN_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com"
-          echo "Fetching OIDC Token from: $TOKEN_URL"
-          
-          curl -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$TOKEN_URL" | jq -r '.value' > token.jwt
-
-          if [ ! -s token.jwt ]; then
-            echo "Error: token.jwt is empty!"
-            exit 1
-          fi
-
-          echo "OIDC Token successfully retrieved!"
-
-      # IAM ロールを Assume できるかテスト
-      - name: Assume AWS Role
-        run: |
-          aws sts assume-role-with-web-identity \
-            --role-arn "arn:aws:iam::490004643576:role/github-actions-lambda-deploy" \
-            --role-session-name "GitHubActionsSession" \
-            --web-identity-token file://token.jwt \
-            --duration-seconds 900
-
-      # Debug OIDC Token URL
-      - name: Debug OIDC Token URL
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL=${ACTIONS_ID_TOKEN_REQUEST_URL}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"
-          curl -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com"
+          aws lambda update-function-code \
+            --function-name my-lambda-function \
+            --zip-file fileb://lambda_function.zip
