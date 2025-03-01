@@ -8,6 +8,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # OIDC トークンの取得を許可
+      contents: read   # リポジトリの読み取りを許可
 
     steps:
       # 1. ソースコードを取得
@@ -37,7 +40,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 6. Lambdaコードを更新
+      # 6. AWS CLI のバージョンを確認 (デバッグ)
+      - name: Check AWS CLI version
+        run: aws --version
+
+      # 7. Lambdaコードを更新
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
