@@ -1,34 +1,38 @@
-name: Deploy AWS Lambda
+name: Deploy to AWS Lambda
 
 on:
   push:
     branches:
-      - main  # ✅ main ブランチにプッシュされたら実行
+      - main  # mainブランチにプッシュされたら実行
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: リポジトリをチェックアウト
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Python環境をセットアップ
         uses: actions/setup-python@v3
         with:
-          python-version: 3.9
+          python-version: '3.13'
 
-      - name: Install dependencies (Lambda 用)
-        run: pip install -r requirements-lambda.txt -t .
+      - name: 依存関係をインストール
+        run: |
+          pip install --upgrade pip
+          pip install -r lambda/requirements.txt -t lambda/
 
-      - name: Zip application
-        run: zip -r lambda_function.zip .
+      - name: ZIPファイルを作成
+        run: cd lambda && zip -r ../lambda_function.zip .
 
-      - name: Deploy to AWS Lambda
+      - name: AWS 認証の設定
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # GitHub Secrets に追加
+          aws-region: ap-northeast-1
+
+      - name: AWS Lambdaにデプロイ
         uses: aws-actions/aws-lambda-deploy@v1
         with:
-          function-name: my-test-lambda
+          function-name: my-lambda-function  # Lambda関数名を指定
           zip-file: lambda_function.zip
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1  # AWSのリージョン（適宜変更）

@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements-docker.txt requirements.txt
 
 # 必要なパッケージをインストール
-RUN pip install --no-cache-dir -r requirements-docker.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリのコードをコピー
 COPY . .
