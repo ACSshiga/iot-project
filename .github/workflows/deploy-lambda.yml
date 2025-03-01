@@ -9,32 +9,44 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write  # OIDC トークンの取得を許可
+      contents: read   # リポジトリの読み取りを許可
 
     steps:
+      # 1. ソースコードを取得
       - name: Check out repository
         uses: actions/checkout@v3
 
+      # 2. Pythonのセットアップ (ランタイムに合わせる)
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.9'
 
+      # 3. 依存関係インストール
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r lambda/requirements.txt
+          pip install -r lambda/requirements.txt -t lambda/
 
+      # 4. ZIP化
+      - name: Zip the Lambda function
+        run: cd lambda && zip -r ../lambda_function.zip .
+
+      # 5. AWS認証 (OIDC)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # 6. AWS CLI のバージョンを確認 (デバッグ)
+      - name: Check AWS CLI version
+        run: aws --version
+
+      # 7. Lambdaコードを更新
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
-            --function-name ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }} \
+            --function-name my-lambda-function \
             --zip-file fileb://lambda_function.zip
-
