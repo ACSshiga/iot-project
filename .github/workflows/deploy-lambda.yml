@@ -3,7 +3,7 @@ name: Deploy to AWS Lambda
 on:
   push:
     branches:
-      - main  # mainブランチにプッシュされたら実行
+      - main
 
 jobs:
   deploy:
@@ -15,6 +15,7 @@ jobs:
       - name: Python環境をセットアップ
         uses: actions/setup-python@v3
         with:
+          # Lambdaのランタイムに合わせたPythonバージョンを指定する
           python-version: '3.13'
 
       - name: 依存関係をインストール
@@ -25,14 +26,17 @@ jobs:
       - name: ZIPファイルを作成
         run: cd lambda && zip -r ../lambda_function.zip .
 
+      # AWSクレデンシャルの設定 (公式アクション)
       - name: AWS 認証の設定
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # GitHub Secrets に追加
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Lambdaにデプロイ
-        uses: aws-actions/aws-lambda-deploy@v1
-        with:
-          function-name: my-lambda-function  # Lambda関数名を指定
-          zip-file: lambda_function.zip
+      # デプロイ
+      - name: Lambda 関数をアップデート
+        run: |
+          aws lambda update-function-code \
+            --function-name my-lambda-function \
+            --zip-file fileb://lambda_function.zip
+
