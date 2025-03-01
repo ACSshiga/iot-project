@@ -33,17 +33,19 @@ jobs:
           role-to-assume: arn:aws:iam::490004643576:role/github-actions-lambda-deploy
           aws-region: ap-northeast-1
 
-      # デプロイ
+            # デプロイ
       - name: Lambda 関数をアップデート
         run: |
           aws lambda update-function-code \
             --function-name my-lambda-function \
             --zip-file fileb://lambda_function.zip
-            - name: 環境変数の確認 (Debug)
-  run: |
-    echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
-    echo "GITHUB_REF=${GITHUB_REF}"
-    echo "ブランチ名=${GITHUB_REF#refs/heads/}"
+
+      # 環境変数の確認
+      - name: 環境変数の確認 (Debug)
+        run: |
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
+          echo "GITHUB_REF=${GITHUB_REF}"
+          echo "ブランチ名=${GITHUB_REF#refs/heads/}"
 
             
 
