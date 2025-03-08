@@ -1,0 +1,7 @@
+# すべてのテキストファイルを LF に統一
+* text=auto
+
+# Python, Docker関連のファイルは LF を強制
+*.py text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
