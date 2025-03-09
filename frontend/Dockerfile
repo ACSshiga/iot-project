@@ -9,9 +9,14 @@ COPY package.json package-lock.json ./
 
 # npmを使って依存関係をインストール
 RUN npm install
+RUN npm install tailwindcss@latest postcss@latest autoprefixer@latest --save-dev
+RUN npm install tailwindcss-animate class-variance-authority @radix-ui/react-slot tailwind-merge --save
 
-# Next.js の設定ファイルをコンテナにコピー
+# 設定ファイルをコピー
 COPY next.config.js ./ 
+COPY tsconfig.json ./
+COPY tailwind.config.ts ./
+COPY postcss.config.js ./
 
 # ソースコードをコピー
 COPY . .
@@ -20,5 +25,4 @@ COPY . .
 EXPOSE 3000
 
 # 開発サーバーを起動
-CMD ["npm", "run", "dev"]
-
+CMD ["npm", "run", "dev"] 

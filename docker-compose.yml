@@ -1,19 +1,17 @@
-version: "3.8"
-
 services:
   frontend:
     build:
-      context: ./frontend  # フロントエンドの Dockerfile の場所
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: iot_frontend
     ports:
-      - "3000:3000"  # Next.js のポート
+      - "3000:3000"
     volumes:
-      - ./frontend:/app  # コード変更をリアルタイムで反映
-      - /app/node_modules  # node_modules をホストと分離
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       app:
-        condition: service_healthy  # Flask が準備完了後に起動
+        condition: service_healthy
     environment:
       - NODE_ENV=development
     command: ["npm", "run", "dev"]
