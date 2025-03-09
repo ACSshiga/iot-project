@@ -37,7 +37,6 @@ export default function PowerChart({ data, type }: PowerChartProps) {
   };
 
   const commonAxisProps = {
-    scale: 'auto',
     padding: { left: 20, right: 20 }
   };
 
@@ -51,11 +50,9 @@ export default function PowerChart({ data, type }: PowerChartProps) {
               dataKey="timestamp"
               tickFormatter={formatDate}
               interval={0}
-              {...commonAxisProps}
             />
             <YAxis
               tickFormatter={(value) => `${value} Wh`}
-              {...commonAxisProps}
             />
             <Tooltip
               labelFormatter={formatDate}
@@ -75,11 +72,9 @@ export default function PowerChart({ data, type }: PowerChartProps) {
               dataKey="timestamp"
               tickFormatter={formatDate}
               interval="preserveStartEnd"
-              {...commonAxisProps}
             />
             <YAxis
               tickFormatter={(value) => `${value} kWh`}
-              {...commonAxisProps}
             />
             <Tooltip
               labelFormatter={formatDate}
