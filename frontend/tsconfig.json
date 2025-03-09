@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "types": ["./types"],
+    // "types": ["./types"], <- この行を削除または変更
     "plugins": [
       {
         "name": "next"
