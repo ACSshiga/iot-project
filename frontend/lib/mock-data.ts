@@ -20,7 +20,7 @@ export function generateHourlyData(date: Date = new Date()): PowerData[] {
     if (i >= 7 && i <= 9) { // 朝の時間帯
       basePower = 1000;
     } else if (i >= 17 && i <= 22) { // 夕方〜夜の時間帯
-      basePower = 1500;
+      basePower = 200;
     }
     
     // ±20%の範囲でランダムな変動を加える
