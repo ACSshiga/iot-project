@@ -53,6 +53,7 @@ export default function PowerChart({ data, type }: PowerChartProps) {
             />
             <YAxis
               tickFormatter={(value) => `${value} Wh`}
+              domain={[0, 2500]}
             />
             <Tooltip
               labelFormatter={formatDate}
@@ -75,6 +76,7 @@ export default function PowerChart({ data, type }: PowerChartProps) {
             />
             <YAxis
               tickFormatter={(value) => `${value} kWh`}
+              domain={[0, 50000]}
             />
             <Tooltip
               labelFormatter={formatDate}
