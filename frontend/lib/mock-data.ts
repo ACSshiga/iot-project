@@ -15,22 +15,25 @@ export function generateHourlyData(date: Date = new Date()): PowerData[] {
     const timestamp = new Date(startOfDay);
     timestamp.setHours(i);
     
+    // 平日と週末を判定
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    
     // 時間帯によって電力使用量のパターンを変える
-    let basePower = 500; // 基本電力（W）
+    let basePower = isWeekend ? 300 : 500; // 週末は基本電力が低い
     if (i >= 6 && i <= 7) { // 早朝の時間帯
-      basePower = 800 + (i - 6) * 200; // 徐々に上昇
+      basePower = isWeekend ? 400 : 800 + (i - 6) * 200; // 週末は上昇幅が小さい
     } else if (i >= 8 && i <= 17) { // 日中（工場稼働時間）
-      basePower = 2000; // 高電力
+      basePower = isWeekend ? 500 : 2000; // 週末は低電力
     } else if (i >= 18 && i <= 19) { // 夕方の時間帯
-      basePower = 1500 - (i - 18) * 500; // 徐々に下降
+      basePower = isWeekend ? 400 : 1500 - (i - 18) * 500; // 週末は低電力
     } else if (i >= 20 && i <= 23) { // 夜間
-      basePower = 500; // 低電力
+      basePower = isWeekend ? 300 : 500; // 週末は低電力
     }
     
     // ±10%の範囲でランダムな変動を加える
     const variation = basePower * 0.2 * (Math.random() - 0.5);
     const power = Math.floor(basePower + variation);
-    const finalPower = Math.max(300, Math.min(2500, power));
+    const finalPower = Math.max(200, Math.min(isWeekend ? 600 : 2500, power)); // 週末は最大電力も低い
     
     data.push({
       timestamp: timestamp.toISOString(),
