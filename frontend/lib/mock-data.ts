@@ -70,8 +70,8 @@ export interface PowerSummary {
   maxPower: number;      // 最大瞬時電力（W）
 }
 
-// サマリーデータの計算
-export function calculateSummary(data: PowerData[]): PowerSummary {
+// サマリーデータの生成（calculate → generateSummary に変更済み）
+export function generateSummary(data: PowerData[]): PowerSummary {
   const totalPower = data.reduce((sum, item) => sum + item.totalPower, 0);
   const averagePower = totalPower / data.length;
   const maxPower = Math.max(...data.map(d => d.power));
