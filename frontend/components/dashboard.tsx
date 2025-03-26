@@ -21,13 +21,11 @@ export default function Dashboard() {
   const [dailyData, setDailyData] = useState(() => generateDailyData(date));
   const [summary, setSummary] = useState(() => generateSummary());
 
-  // 日付が変更されたときにデータを更新
   useEffect(() => {
     setHourlyData(generateHourlyData(date));
     setDailyData(generateDailyData(date));
   }, [date]);
 
-  // 自動更新はサマリーのみに適用
   useEffect(() => {
     if (!autoUpdate) return;
 
@@ -39,11 +37,11 @@ export default function Dashboard() {
   }, [autoUpdate]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold">電力モニタリングダッシュボード</h1>
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-background p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl sm:text-4xl font-bold">電力モニタリングダッシュボード</h1>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
             <div className="flex items-center space-x-2">
               <Switch
                 id="auto-update"
@@ -54,7 +52,7 @@ export default function Dashboard() {
             </div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
+                <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {format(date, 'PPP', { locale: ja })}
                 </Button>
@@ -71,7 +69,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid gap-8 grid-cols-1 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-8 grid-cols-1 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">総使用電力量</CardTitle>
@@ -102,10 +100,16 @@ export default function Dashboard() {
         </div>
 
         <Tabs defaultValue="hourly" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="hourly">時間別</TabsTrigger>
-            <TabsTrigger value="daily">日別</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center w-full">
+            <TabsList className="h-12 grid w-full max-w-[400px] grid-cols-2">
+              <TabsTrigger value="hourly" className="text-base sm:text-lg px-2 sm:px-8 data-[state=active]:font-medium">
+                時間別
+              </TabsTrigger>
+              <TabsTrigger value="daily" className="text-base sm:text-lg px-2 sm:px-8 data-[state=active]:font-medium">
+                日別
+              </TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="hourly" className="space-y-4">
             <Card>
               <CardHeader>
