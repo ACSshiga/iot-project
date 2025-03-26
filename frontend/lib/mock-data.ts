@@ -1,77 +1,84 @@
 // モックデータの型定義
 export interface PowerData {
   timestamp: string;
-  power: number;
-  totalPower: number; // 1時間あたりの電力量（Wh）を追加
+  power: number;       // 瞬時電力（W）
+  totalPower: number;  // 1時間あたりの電力量（Wh）
 }
 
-// 指定された日付の24時間分のモックデータを生成
+// 指定された日付の24時間分のモックデータを生成（工場想定）
 export function generateHourlyData(date: Date = new Date()): PowerData[] {
   const data: PowerData[] = [];
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
-  
+
+  const isWeekend = startOfDay.getDay() === 0 || startOfDay.getDay() === 6;
+
   for (let i = 0; i < 24; i++) {
     const timestamp = new Date(startOfDay);
     timestamp.setHours(i);
-    
-    // 時間帯によって電力使用量のパターンを変える
-    let basePower = 300; // 基本電力（W）
-    if (i >= 7 && i <= 9) { // 朝の時間帯
+
+    let basePower = 200; // 夜間・週末デフォルト
+
+    // 平日かつ8時〜18時は工場稼働（高め）
+    if (!isWeekend && i >= 8 && i < 18) {
       basePower = 1000;
-    } else if (i >= 17 && i <= 22) { // 夕方〜夜の時間帯
-      basePower = 200;
     }
-    
-    // ±20%の範囲でランダムな変動を加える
-    const variation = basePower * 0.4 * (Math.random() - 0.5);
+
+    // ±15%の変動を加える
+    const variation = basePower * 0.3 * (Math.random() - 0.5);
     const power = Math.floor(basePower + variation);
-    const finalPower = Math.max(300, Math.min(2000, power));
-    
+    const finalPower = Math.max(100, Math.min(2000, power));
+
     data.push({
       timestamp: timestamp.toISOString(),
-      power: finalPower, // 瞬時電力（W）
-      totalPower: finalPower // 1時間あたりの電力量（Wh）
+      power: finalPower,
+      totalPower: finalPower // 1時間維持を前提にWhとする
     });
   }
-  
+
   return data;
 }
 
-// 指定された月の日次データを生成
+// 指定された月の日次データを生成（工場想定）
 export function generateDailyData(date: Date = new Date()): PowerData[] {
   const data: PowerData[] = [];
   const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
   const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  
+
   for (let day = new Date(startOfMonth); day <= endOfMonth; day.setDate(day.getDate() + 1)) {
-    // 平日と週末で使用量を変える
     const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-    const baseUsage = isWeekend ? 32000 : 38000;
+
+    // 平日: フル稼働、週末: 軽稼働
+    const baseUsage = isWeekend ? 15000 : 38000;
     const variation = baseUsage * 0.2 * (Math.random() - 0.5);
-    
+    const finalUsage = Math.floor(baseUsage + variation);
+
     data.push({
       timestamp: new Date(day).toISOString(),
-      power: Math.floor(baseUsage + variation),
-      totalPower: Math.floor(baseUsage + variation)
+      power: finalUsage,
+      totalPower: finalUsage
     });
   }
-  
+
   return data;
 }
 
 // サマリーデータの型定義
 export interface PowerSummary {
-  totalPower: number;
-  averagePower: number;
-  maxPower: number;
+  totalPower: number;    // 全体の総電力量（Wh）
+  averagePower: number;  // 平均瞬時電力（W）
+  maxPower: number;      // 最大瞬時電力（W）
 }
 
-// サマリーデータの生成
-export function generateSummary(): PowerSummary {
+// サマリーデータの計算
+export function calculateSummary(data: PowerData[]): PowerSummary {
+  const totalPower = data.reduce((sum, item) => sum + item.totalPower, 0);
+  const averagePower = totalPower / data.length;
+  const maxPower = Math.max(...data.map(d => d.power));
+
   return {
-    totalPower: 145200, // kWh
-    averagePower: 850,  // W
-    maxPower: 2100,     // W
+    totalPower,
+    averagePower: Math.floor(averagePower),
+    maxPower
   };
 }
